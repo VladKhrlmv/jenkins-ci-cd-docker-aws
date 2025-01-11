@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    user: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=cinema_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  # keycloak:
+  #   image: quay.io/keycloak/keycloak:23.0.4
+  #   command: start-dev
+  #   environment:
+  #     - KEYCLOAK_ADMIN=admin
+  #     - KEYCLOAK_ADMIN_PASSWORD=admin
+  #   ports:
+  #     - '8080:8080'
+  #   volumes:
+  #     - ./keycloak/docker_volumes/keycloak:/opt/keycloak/data
+
+volumes:
+  db:
+    driver: local

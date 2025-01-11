@@ -1,0 +1,9 @@
+CREATE INDEX idx_users_email ON users (email);
+CREATE INDEX idx_reviews_movie_id ON reviews (movie_id);
+CREATE INDEX idx_reviews_user_id ON reviews (user_id);
+CREATE INDEX idx_seats_cinema_id ON seats (cinema_id);
+CREATE INDEX idx_showtimes_movie_id ON showtimes (movie_id);
+CREATE INDEX idx_showtimes_cinema_id ON showtimes (cinema_id);
+CREATE INDEX idx_tickets_user_id ON tickets (user_id);
+CREATE INDEX idx_tickets_show_id ON tickets (show_id);
+CREATE INDEX idx_tickets_booking_date ON tickets (booking_date);
