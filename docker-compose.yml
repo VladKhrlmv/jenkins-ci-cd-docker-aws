@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:14.1-alpine
+    user: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=/run/secrets/db_password
+      - POSTGRES_DB=cinema_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+    secrets:
+      - db_password
+
+  backend:
+    build: ./app
+    environment:
+      - SERVER_PORT=8080
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=cinema_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=/run/secrets/db_password
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=api/hello
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  db:
+    driver: local
+
+secrets:
+  db_password:
+    file: db_password.txt

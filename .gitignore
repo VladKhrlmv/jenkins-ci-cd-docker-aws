@@ -1,0 +1,11 @@
+.env
+db_password.txt
+.terraform*
+*.hcl
+*.backup
+*.tfstate
+tmp
+*.md
+frontend/*
+*/target
+.idea

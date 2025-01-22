@@ -1,0 +1,38 @@
+# ansible/jenkins_machine.yml
+
+- name: Configure Jenkins Server
+  hosts: jenkins_machines
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 600
+
+    - name: Install Java (Jenkins requires Java)
+      apt:
+        name: openjdk-17-jdk
+        state: present
+
+    - name: Add Jenkins apt repo key
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+        state: present
+
+    - name: Add Jenkins apt repo
+      apt_repository:
+        repo: "deb https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+        update_cache: yes
+
+    - name: Ensure Jenkins is started and enabled
+      service:
+        name: jenkins
+        state: started
+        enabled: yes

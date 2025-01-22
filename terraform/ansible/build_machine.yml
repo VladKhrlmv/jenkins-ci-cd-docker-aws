@@ -1,0 +1,79 @@
+# ansible/build_machine.yml
+
+- name: Configure Build Node
+  hosts: build_machines
+  become: true
+  vars:
+    maven_version: "3.9.5"
+    maven_download_url: "https://downloads.apache.org/maven/maven-3/{{ maven_version }}/binaries/apache-maven-{{ maven_version }}-bin.tar.gz"
+  tasks:
+    - name: Update and upgrade APT packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 600
+
+    - name: Install required packages
+      apt:
+        name:
+          - git
+          - openjdk-17-jdk
+          - curl
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        append: yes
+        groups: docker
+
+    - name: Enable and start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Download Maven
+      get_url:
+        url: "{{ maven_download_url }}"
+        dest: "/tmp/apache-maven-{{ maven_version }}-bin.tar.gz"
+
+    - name: Extract Maven
+      unarchive:
+        src: "/tmp/apache-maven-{{ maven_version }}-bin.tar.gz"
+        dest: "/opt"
+        remote_src: yes
+        creates: "/opt/apache-maven-{{ maven_version }}"
+
+    - name: Create symlink to Maven
+      file:
+        src: "/opt/apache-maven-{{ maven_version }}"
+        dest: "/opt/maven"
+        state: link
+        force: yes
+
+    - name: Set Maven environment variables
+      copy:
+        dest: /etc/profile.d/maven.sh
+        content: |
+          export MAVEN_HOME=/opt/maven
+          export PATH=${MAVEN_HOME}/bin:${PATH}
+        mode: '0755'
+
+    - name: Install GitHub CLI
+      shell: |
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+          dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) \
+          signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
+          https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list
+        apt-get update -y
+        apt-get install -y gh
+      args:
+        executable: /bin/bash
